@@ -1,9 +1,8 @@
 """Tests for advanced C++ features including inheritance in xc8plusplus transpiler."""
 
-import pytest
-from pathlib import Path
-import tempfile
 import os
+import tempfile
+from pathlib import Path
 
 from xc8plusplus import XC8Transpiler
 
@@ -57,7 +56,7 @@ public:
 
                 # Check generated C code if successful
                 if os.path.exists(c_file_path) and os.path.getsize(c_file_path) > 0:
-                    with open(c_file_path, "r") as f:
+                    with open(c_file_path) as f:
                         c_code = f.read()
 
                     # Should generate basic C structure
@@ -124,7 +123,7 @@ public:
 
                 # Check generated C code if successful
                 if os.path.exists(c_file_path) and os.path.getsize(c_file_path) > 0:
-                    with open(c_file_path, "r") as f:
+                    with open(c_file_path) as f:
                         c_code = f.read()
                     assert "typedef struct" in c_code
 
@@ -194,7 +193,7 @@ public:
 
                 # Check generated C code
                 if os.path.exists(c_file_path) and os.path.getsize(c_file_path) > 0:
-                    with open(c_file_path, "r") as f:
+                    with open(c_file_path) as f:
                         c_code = f.read()
                     assert "typedef struct" in c_code
 
@@ -240,7 +239,7 @@ public:
         assert advanced_example.exists(), "Advanced features example file should exist"
 
         # Check that files contain inheritance keywords
-        with open(inheritance_example, "r") as f:
+        with open(inheritance_example) as f:
             content = f.read()
             assert ": public" in content, "Should contain inheritance syntax"
             assert "class" in content, "Should contain class definitions"

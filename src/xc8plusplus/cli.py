@@ -2,9 +2,10 @@
 CLI interface for xc8plusplus transpiler using Typer.
 """
 
-import typer
 from pathlib import Path
 from typing import Optional
+
+import typer
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
@@ -76,7 +77,7 @@ def transpile(
             )
 
             if verbose:
-                console.print(f"\n[bold]Analysis Results:[/bold]")
+                console.print("\n[bold]Analysis Results:[/bold]")
                 console.print(f"  Classes found: {len(transpiler.classes)}")
                 for class_name, info in transpiler.classes.items():
                     console.print(
@@ -88,13 +89,13 @@ def transpile(
 
     except Exception as e:
         console.print(f"[bold red]❌ Error:[/bold red] {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 @app.command()
 def version() -> None:
     """Show version information."""
-    from . import __version__, __author__
+    from . import __author__, __version__
 
     console.print(f"[bold]xc8plusplus[/bold] version {__version__}")
     console.print(f"Author: {__author__}")
@@ -116,9 +117,9 @@ def demo() -> None:
         "  • [green]Memory efficient[/green] - Suitable for 8-bit microcontrollers"
     )
 
-    console.print(f"\n[bold]Example Usage:[/bold]")
-    console.print(f"  xc8plusplus transpile input.cpp output.c")
-    console.print(f"  xc8-cc -mcpu=16F18877 output.c -o firmware.hex")
+    console.print("\n[bold]Example Usage:[/bold]")
+    console.print("  xc8plusplus transpile input.cpp output.c")
+    console.print("  xc8-cc -mcpu=16F18877 output.c -o firmware.hex")
 
 
 def main() -> None:

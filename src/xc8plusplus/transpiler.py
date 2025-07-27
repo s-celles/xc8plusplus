@@ -8,10 +8,9 @@ Uses Clang AST analysis and demonstrates the architecture
 we'll implement in C++ with LibTooling.
 """
 
-import sys
-import subprocess
-import json
 import re
+import subprocess
+import sys
 from pathlib import Path
 
 
@@ -252,7 +251,7 @@ def main():
     success = transpiler.transpile(input_file, output_file)
 
     if success:
-        print(f"\nSUCCESS: Transpilation complete!")
+        print("\nSUCCESS: Transpilation complete!")
         print(f"Output written to: {output_file}")
         print(
             "\nThis demonstrates the architecture for our C++ LibTooling implementation"

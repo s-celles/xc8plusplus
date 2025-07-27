@@ -1,8 +1,9 @@
 """Pytest configuration for xc8plusplus tests."""
 
-import pytest
 import sys
 from pathlib import Path
+
+import pytest
 
 # Add the src directory to the Python path so we can import xc8plusplus
 src_dir = Path(__file__).parent.parent / "src"
@@ -18,20 +19,20 @@ def sample_cpp_code():
 class TestClass {
 private:
     int value;
-    
+
 public:
     TestClass() : value(0) {}
-    
+
     TestClass(int v) : value(v) {}
-    
+
     int getValue() const {
         return value;
     }
-    
+
     void setValue(int v) {
         value = v;
     }
-    
+
     void printValue() const {
         std::cout << "Value: " << value << std::endl;
     }
@@ -40,11 +41,11 @@ public:
 int main() {
     TestClass obj(42);
     obj.printValue();
-    
+
     TestClass obj2;
     obj2.setValue(100);
     obj2.printValue();
-    
+
     return 0;
 }
 """

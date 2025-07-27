@@ -1,9 +1,7 @@
 """Integration tests for xc8plusplus."""
 
-import pytest
-import tempfile
 import os
-from pathlib import Path
+import tempfile
 
 from xc8plusplus import XC8Transpiler
 
@@ -34,7 +32,7 @@ class TestIntegration:
 
             # If transpilation succeeded, check that we have some output
             if success:
-                with open(c_file_path, "r") as f:
+                with open(c_file_path) as f:
                     output_content = f.read()
                 assert len(output_content) > 0
 
@@ -48,11 +46,11 @@ class TestIntegration:
         finally:
             try:
                 os.unlink(cpp_file_path)
-            except:
+            except Exception:
                 pass
             try:
                 os.unlink(c_file_path)
-            except:
+            except Exception:
                 pass
 
     def test_transpiler_with_simple_code(self, simple_cpp_code):
@@ -70,7 +68,7 @@ class TestIntegration:
             c_file_path = c_file.name
 
         try:
-            success = transpiler.transpile(cpp_file_path, c_file_path)
+            transpiler.transpile(cpp_file_path, c_file_path)
 
             # File should exist regardless of success
             assert os.path.exists(c_file_path)
@@ -78,11 +76,11 @@ class TestIntegration:
         finally:
             try:
                 os.unlink(cpp_file_path)
-            except:
+            except Exception :
                 pass
             try:
                 os.unlink(c_file_path)
-            except:
+            except Exception:
                 pass
 
     def test_error_handling(self):
@@ -99,7 +97,7 @@ class TestIntegration:
         finally:
             try:
                 os.unlink(output_file_path)
-            except:
+            except Exception:
                 pass
 
     def test_empty_file_handling(self):
@@ -118,16 +116,16 @@ class TestIntegration:
             c_file_path = c_file.name
 
         try:
-            success = transpiler.transpile(cpp_file_path, c_file_path)
+            transpiler.transpile(cpp_file_path, c_file_path)
             # Should handle empty files gracefully
             assert os.path.exists(c_file_path)
 
         finally:
             try:
                 os.unlink(cpp_file_path)
-            except:
+            except Exception:
                 pass
             try:
                 os.unlink(c_file_path)
-            except:
+            except Exception:
                 pass

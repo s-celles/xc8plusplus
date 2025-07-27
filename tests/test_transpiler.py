@@ -1,9 +1,7 @@
 """Tests for xc8plusplus transpiler."""
 
-import pytest
-from pathlib import Path
-import tempfile
 import os
+import tempfile
 
 from xc8plusplus import XC8Transpiler
 
@@ -69,11 +67,11 @@ public:
         finally:
             try:
                 os.unlink(cpp_file_path)
-            except:
+            except Exception:
                 pass
             try:
                 os.unlink(c_file_path)
-            except:
+            except Exception:
                 pass
 
     def test_invalid_input_file(self):
@@ -89,5 +87,5 @@ public:
         finally:
             try:
                 os.unlink(output_file_path)
-            except:
+            except Exception:
                 pass

@@ -1,10 +1,9 @@
 """Tests for xc8plusplus CLI."""
 
-import pytest
-from typer.testing import CliRunner
-import tempfile
 import os
-from pathlib import Path
+import tempfile
+
+from typer.testing import CliRunner
 
 from xc8plusplus.cli import app
 
@@ -67,11 +66,11 @@ int main() {
         finally:
             try:
                 os.unlink(input_file_path)
-            except:
+            except OSError:
                 pass
             try:
                 os.unlink(output_file_path)
-            except:
+            except OSError:
                 pass
 
     def test_demo_command(self):

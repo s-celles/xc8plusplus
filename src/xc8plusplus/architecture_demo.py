@@ -128,7 +128,7 @@ class LibToolingArchitectureDemo:
         print("   ✅ Preserving comments and formatting")
         print("   ✅ Type-safe code generation")
 
-        for transform_type, name, description in self.transformations:
+        for _transform_type, name, description in self.transformations:
             print(f"     • {description}: {name}")
 
         return True
@@ -152,17 +152,17 @@ class LibToolingArchitectureDemo:
         return """/*
  * PROFESSIONAL C++ TO C TRANSPILATION
  * ====================================
- * 
+ *
  * Generated using LibTooling-style architecture
  * Demonstrates the CORRECT approach to transpilation
- * 
+ *
  * PROFESSIONAL FEATURES:
  * [SUCCESS] AST-based semantic analysis (not string manipulation)
  * [SUCCESS] Declarative pattern matching (not regex soup)
  * [SUCCESS] Rewriter API transformations (not text replacement)
  * [SUCCESS] Type-safe code generation (not template substitution)
  * [SUCCESS] Professional architecture (not Python soup)
- * 
+ *
  * This approach is:
  * - More reliable (no regex edge cases)
  * - More maintainable (clear architecture)
@@ -257,42 +257,42 @@ void Led_cleanup(Led* self) {
 void professional_demo(void) {
     // Demonstrate professional C code usage
     Led myLed;
-    
+
     // Professional object lifecycle
     Led_init(&myLed);      // Initialize
-    
+
     Led_turnOn(&myLed);    // Use methods
     bool status = Led_isOn(&myLed);
-    
+
     Led_cleanup(&myLed);   // Cleanup
 }
 
 /*
  * PROFESSIONAL ARCHITECTURE SUMMARY:
  * ===================================
- * 
+ *
  * This code demonstrates the CORRECT approach to C++ to C transpilation:
- * 
+ *
  * 1. SEMANTIC ANALYSIS:
  *    - Uses Clang AST for understanding code structure
  *    - No string manipulation or regex patterns
  *    - Proper type system integration
- * 
+ *
  * 2. DECLARATIVE TRANSFORMATION:
  *    - AST matchers for pattern recognition
  *    - Professional transformation rules
  *    - Type-safe code generation
- * 
+ *
  * 3. PROFESSIONAL OUTPUT:
  *    - XC8-optimized C code
  *    - Proper error handling
  *    - Maintainable architecture
- * 
+ *
  * 4. EXTENSIBLE DESIGN:
  *    - Ready for additional C++ features
  *    - Professional code organization
  *    - Industry-standard practices
- * 
+ *
  * NO MORE PYTHON SOUP!
  */
 """
@@ -318,12 +318,12 @@ def main():
     success = demo.run_professional_transpiler()
 
     if success:
-        print(f"\n🎉 PROFESSIONAL ARCHITECTURE DEMO COMPLETE!")
-        print(f"📋 This shows the CORRECT way to implement transpilation")
-        print(f"🔗 Ready for full LibTooling C++ implementation")
+        print("\n🎉 PROFESSIONAL ARCHITECTURE DEMO COMPLETE!")
+        print("📋 This shows the CORRECT way to implement transpilation")
+        print("🔗 Ready for full LibTooling C++ implementation")
         return 0
     else:
-        print(f"\n❌ Professional architecture demo failed")
+        print("\n❌ Professional architecture demo failed")
         return 1
 
 

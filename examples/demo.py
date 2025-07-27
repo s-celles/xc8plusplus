@@ -3,8 +3,8 @@
 Example script showing how to use xc8plusplus transpiler.
 """
 
-import tempfile
 import os
+import tempfile
 from pathlib import Path
 
 from xc8plusplus import XC8Transpiler
@@ -24,22 +24,22 @@ class LED {
 private:
     int pin;
     bool state;
-    
+
 public:
     LED(int pin_num) : pin(pin_num), state(false) {
         printf("LED initialized on pin %d\\n", pin);
     }
-    
+
     void on() {
         state = true;
         printf("LED on pin %d is ON\\n", pin);
     }
-    
+
     void off() {
         state = false;
         printf("LED on pin %d is OFF\\n", pin);
     }
-    
+
     bool isOn() const {
         return state;
     }
@@ -48,14 +48,14 @@ public:
 int main() {
     LED led1(13);
     LED led2(12);
-    
+
     led1.on();
     led2.off();
-    
+
     if (led1.isOn()) {
         printf("LED1 is currently on\\n");
     }
-    
+
     return 0;
 }
 """
@@ -84,22 +84,22 @@ int main() {
             print("✅ Transpilation successful!")
 
             # Show results
-            with open(c_path, "r") as f:
+            with open(c_path) as f:
                 c_code = f.read()
 
-            print(f"\n📊 Analysis Results:")
+            print("\n📊 Analysis Results:")
             print(f"   Classes found: {len(transpiler.classes)}")
             for class_name, info in transpiler.classes.items():
                 print(
                     f"   • {class_name}: {len(info['methods'])} methods, {len(info['fields'])} fields"
                 )
 
-            print(f"\n📄 Generated C Code:")
+            print("\n📄 Generated C Code:")
             print("-" * 40)
             print(c_code)
             print("-" * 40)
 
-            print(f"\n💡 To compile with XC8:")
+            print("\n💡 To compile with XC8:")
             print(f"   xc8-cc -mcpu=16F18877 {Path(c_path).name} -o firmware.hex")
 
         else:
@@ -114,7 +114,7 @@ int main() {
         try:
             os.unlink(cpp_path)
             os.unlink(c_path)
-        except:
+        except OSError:
             pass
 
 
