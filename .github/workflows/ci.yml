@@ -3,14 +3,7 @@ name: CI
 on:
   push:
     branches: [ main, develop ]
-  pu    - name: Upload coverage reports to Codecov
-      if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
-      uses: codecov/codecov-action@v4
-      with:
-        files: ./coverage.xml
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: falsest:
+  pull_request:
     branches: [ main, develop ]
 
 jobs:
@@ -73,9 +66,6 @@ jobs:
       uses: codecov/codecov-action@v4
       with:
         files: ./coverage.xml
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: false
         flags: unittests
         name: codecov-umbrella
         fail_ci_if_error: false
