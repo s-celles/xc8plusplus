@@ -29,7 +29,7 @@ The transpiler implementation is located in the `src/` directory:
 - **`XC8Transpiler.cpp`** - Standalone LibTooling demonstration
   - Shows C++ implementation approach
   - Ready for full LLVM/Clang development environment
-  - Professional AST visitor patterns
+  - AST visitor patterns
 
 ## Transpilation Process
 

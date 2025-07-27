@@ -2,6 +2,15 @@
 
 Get up and running with xc8plusplus in 5 minutes!
 
+!!! warning "Development Status"
+    This project is currently in active development. APIs may change between versions.
+
+!!! info "AI-Generated Content Notice"
+    A significant portion of this project's content (including code, documentation, and examples) has been generated using AI assistance. Please review all code and documentation carefully before use in production environments. We recommend thorough testing and validation of any AI-generated components.
+
+!!! note "Unofficial Project"
+    This is an unofficial, community-driven project and is not affiliated with, endorsed by, or supported by Microchip Technology Inc. The XC8 compiler and PIC microcontrollers are products of Microchip Technology Inc.
+
 ## 🚀 Installation
 
 ```bash
@@ -276,8 +285,7 @@ mypy src/xc8plusplus/
 - 📖 **[Full Documentation](index.md)** - Complete project overview
 - 🏗️ **[API Reference](api.md)** - Detailed API documentation
 - 🛠️ **[Building Guide](building.md)** - Development environment setup
-- 💡 **[Examples](../examples/USAGE.md)** - More usage examples
-- 🔬 **[Architecture](implementation.md)** - Technical deep dive
+-  **[Architecture](implementation.md)** - Technical deep dive
 
 ## ❓ Quick Troubleshooting
 

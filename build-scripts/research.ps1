@@ -122,7 +122,7 @@ function Get-XC8Source {
 
 ## Next Steps
 1. Research Microchip website for XC8 source downloads
-2. Verify GPL compatibility
+2. Verify license compatibility
 3. Download and extract source code
 4. Begin architecture analysis
 '@

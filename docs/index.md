@@ -1,14 +1,23 @@
 # xc8plusplus Documentation
 
-Welcome to xc8plusplus - a professional C++ to C transpiler for Microchip's XC8 compiler. This project enables modern C++ development for 8-bit PIC microcontrollers using semantic AST analysis.
+Welcome to xc8plusplus - a C++ to C transpiler for Microchip's XC8 compiler. This project enables modern C++ development for 8-bit PIC microcontrollers using semantic AST analysis.
+
+!!! warning "Development Status"
+    This project is currently in active development. APIs may change between versions.
+
+!!! info "AI-Generated Content Notice"
+    A significant portion of this project's content (including code, documentation, and examples) has been generated using AI assistance. Please review all code and documentation carefully before use in production environments. We recommend thorough testing and validation of any AI-generated components.
+
+!!! note "Unofficial Project"
+    This is an unofficial, community-driven project and is not affiliated with, endorsed by, or supported by Microchip Technology Inc. The XC8 compiler and PIC microcontrollers are products of Microchip Technology Inc.
 
 ## 🚀 Quick Links
 
-- [📦 Installation & Usage](#installation--usage)
-- [🏗️ Architecture](#architecture) 
-- [🔬 Research](#research)
-- [🛠️ Development](#development)
-- [📚 API Reference](#api-reference)
+- [📦 Installation & Usage](#-installation--usage)
+- [🏗️ Architecture](#-architecture) 
+- [🔬 Research](#-research)
+- [🛠️ Development](#-development)
+- [📚 API Reference](#-api-reference)
 
 ## 📦 Installation & Usage
 
@@ -41,18 +50,18 @@ success = transpiler.transpile("input.cpp", "output.c")
 ### Project Documentation
 - **[Building & Setup](building.md)** - Development environment setup
 - **[Implementation Guide](implementation.md)** - Technical architecture deep dive
-- **[Usage Examples](../examples/USAGE.md)** - Comprehensive usage documentation
+- **[Quick Start Guide](quick-start.md)** - Get up and running in 5 minutes
 
 ## 🏗️ Architecture
 
-### Professional Python Library
+### Python Library
 
 xc8plusplus is now a **production-ready Python package** with:
 
 - ✅ **Modern CLI** - Rich terminal interface with Typer and Rich
 - ✅ **Python API** - Clean programmatic interface
 - ✅ **Comprehensive Tests** - 13/13 tests passing with pytest
-- ✅ **Professional Packaging** - Standard src-layout with pyproject.toml
+- ✅ **Modern Packaging** - Standard src-layout with pyproject.toml
 - ✅ **Real-world Validation** - Tested with XC8 v3.00 on multiple PICs
 
 ### Core Architecture Principles
@@ -102,14 +111,14 @@ graph LR
 
 ## 🛠️ Development
 
-### Professional Python Library Status
+### Python Library Status
 
 **Current Version: 0.1.0** - Production Ready!
 
 - ✅ **Modern CLI** - Rich terminal interface with Typer and Rich
 - ✅ **Python API** - Clean programmatic interface
 - ✅ **Comprehensive Tests** - 13/13 tests passing with pytest
-- ✅ **Professional Packaging** - Standard src-layout with pyproject.toml
+- ✅ **Modern Packaging** - Standard src-layout with pyproject.toml
 - ✅ **Real-world Validation** - Tested with XC8 v3.00 on multiple PICs
 
 ### Supported Features
@@ -156,7 +165,7 @@ pytest tests/ -v  # 13/13 passing!
 ## 🎯 Project Roadmap
 
 ### Current Release (v0.1.0)
-- ✅ Professional Python package
+- ✅ Python package
 - ✅ CLI and API interfaces
 - ✅ Comprehensive test suite
 - ✅ Real hardware validation
@@ -165,6 +174,13 @@ pytest tests/ -v  # 13/13 passing!
 - 🔄 **v0.2.0** - PyPI publication and extended C++ features
 - 🔄 **v0.3.0** - IDE integration and advanced optimizations
 - 🔄 **v1.0.0** - Full production release with complete C++ subset
+
+## 📚 API Reference
+
+For detailed API documentation, see:
+- **[Python API Reference](api.md)** - Complete XC8Transpiler class documentation
+- **[CLI Commands](api.md#cli-interface)** - Command-line interface reference
+- **[Usage Examples](api.md#integration-examples)** - Code examples and patterns
 
 ---
 

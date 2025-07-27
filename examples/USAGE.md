@@ -1,5 +1,11 @@
 # Usage Examples
 
+> **⚠️ Development Status**: This project is currently in active development. APIs may change between versions.
+
+> **📝 AI-Generated Content**: A significant portion of this project's content has been generated using AI assistance. Please review all code carefully before use in production environments.
+
+> **🏢 Unofficial Project**: This is not affiliated with, endorsed by, or supported by Microchip Technology Inc.
+
 ## Basic Usage
 
 ### Using the CLI

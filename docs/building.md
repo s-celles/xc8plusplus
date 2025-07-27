@@ -1,5 +1,14 @@
 # Building xc8plusplus
 
+!!! warning "Development Status"
+    This project is currently in active development. APIs may change between versions.
+
+!!! info "AI-Generated Content Notice"
+    A significant portion of this project's content (including code, documentation, and examples) has been generated using AI assistance. Please review all code and documentation carefully before use in production environments. We recommend thorough testing and validation of any AI-generated components.
+
+!!! note "Unofficial Project"
+    This is an unofficial, community-driven project and is not affiliated with, endorsed by, or supported by Microchip Technology Inc. The XC8 compiler and PIC microcontrollers are products of Microchip Technology Inc.
+
 ## Prerequisites
 
 - **Python 3.8+** with pip
@@ -69,7 +78,7 @@ pytest tests/ -v
 
 ## Package Structure
 
-### Professional Python Package Layout
+### Python Package Layout
 ```
 xc8plusplus/
 ├── src/xc8plusplus/          # Main package (src-layout)

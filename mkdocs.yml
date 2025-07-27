@@ -1,6 +1,6 @@
 # mkdocs.yml  
 site_name: xc8plusplus
-site_description: Professional C++ to C transpiler for Microchip XC8 compiler using semantic AST analysis
+site_description: C++ to C transpiler for Microchip XC8 compiler using semantic AST analysis
 site_url: https://s-celles.github.io/xc8plusplus/
 repo_url: https://github.com/s-celles/xc8plusplus
 repo_name: s-celles/xc8plusplus
@@ -66,7 +66,6 @@ nav:
     - Implementation Guide: implementation.md
   - API Reference:
     - Python API: api.md
-    - CLI Commands: api.md#cli-interface
   - Technical Details:
     - Research Findings: research-findings.md
     - XC8 Architecture: xc8-architecture.md
@@ -74,7 +73,6 @@ nav:
     - XC8 Source Research: xc8-source-research.md
   - Architecture:
     - Design Decisions: why-python-is-wrong.md
-    - AST Analysis Approach: why-python-is-wrong.md#semantic-analysis
 
 # Extensions
 markdown_extensions:
