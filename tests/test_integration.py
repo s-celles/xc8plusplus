@@ -76,7 +76,7 @@ class TestIntegration:
         finally:
             try:
                 os.unlink(cpp_file_path)
-            except Exception :
+            except Exception:
                 pass
             try:
                 os.unlink(c_file_path)
