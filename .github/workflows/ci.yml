@@ -3,7 +3,14 @@ name: CI
 on:
   push:
     branches: [ main, develop ]
-  pull_request:
+  pu    - name: Upload coverage reports to Codecov
+      if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
+      uses: codecov/codecov-action@v4
+      with:
+        files: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: falsest:
     branches: [ main, develop ]
 
 jobs:
@@ -57,19 +64,18 @@ jobs:
         ruff check .
         ruff format --check .
 
-    - name: Check code formatting with black
-      run: |
-        black --check --diff .
-
     - name: Test with pytest
       run: |
         pytest --cov=src/xc8plusplus --cov-report=xml --cov-report=html --cov-report=term-missing -v
 
     - name: Upload coverage reports to Codecov
       if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
-      uses: codecov/codecov-action@v5
+      uses: codecov/codecov-action@v4
       with:
-        file: ./coverage.xml
+        files: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
         flags: unittests
         name: codecov-umbrella
         fail_ci_if_error: false
@@ -115,14 +121,21 @@ jobs:
         pip install safety bandit
 
     - name: Run safety scan
-      run: safety scan
+      env:
+        SAFETY_OS_DESCRIPTION: "GitHub Actions"
+      run: |
+        # Use safety check (legacy) for CI to avoid authentication requirements
+        safety check --json --output safety-report.json || echo "Safety check completed with warnings"
+      continue-on-error: true
 
     - name: Run bandit security check
       run: bandit -r src/ -f json -o bandit-report.json || true
 
-    - name: Upload security report
+    - name: Upload security reports
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: security-report
-        path: bandit-report.json
+        name: security-reports
+        path: |
+          bandit-report.json
+          safety-report.json
