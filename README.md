@@ -6,7 +6,10 @@ Enables modern C++ development for 8-bit PIC microcontrollers using semantic AST
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://python.org)
 [![License: Apache 2.0 + LLVM](https://img.shields.io/badge/License-Apache%202.0%20+%20LLVM-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-13%2F13%20passing-brightgreen.svg)](tests/)
+[![CI](https://github.com/s-celles/xc8plusplus/workflows/CI/badge.svg)](https://github.com/s-celles/xc8plusplus/actions/workflows/ci.yml)
+[![Documentation](https://github.com/s-celles/xc8plusplus/workflows/Deploy%20Documentation/badge.svg)](https://github.com/s-celles/xc8plusplus/actions/workflows/pages.yml)
+[![codecov](https://codecov.io/gh/s-celles/xc8plusplus/branch/main/graph/badge.svg)](https://codecov.io/gh/s-celles/xc8plusplus)
+[![Tests](https://img.shields.io/badge/tests-27%2F27%20passing-brightgreen.svg)](tests/)
 
 > [!WARNING]  
 > **Development Status**: This project is currently in active development. APIs may change between versions.

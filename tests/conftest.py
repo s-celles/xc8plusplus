@@ -12,7 +12,7 @@ sys.path.insert(0, str(src_dir))
 @pytest.fixture
 def sample_cpp_code():
     """Sample C++ code for testing."""
-    return '''
+    return """
 #include <iostream>
 
 class TestClass {
@@ -47,17 +47,17 @@ int main() {
     
     return 0;
 }
-'''
+"""
 
 
 @pytest.fixture
 def simple_cpp_code():
     """Simple C++ code for basic testing."""
-    return '''
+    return """
 #include <stdio.h>
 
 int main() {
     printf("Hello, World!\\n");
     return 0;
 }
-'''
+"""
