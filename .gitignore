@@ -18,6 +18,28 @@
 
 # Libraries
 *.lib
+
+# XC8 build artifacts
+*.p1
+*.cmf
+*.hex
+*.hxl
+*.lst
+*.s
+*.sym
+*.sdb
+*.rlf
+
+# Temporary transpiler outputs
+demo_*.c
+output_*.c
+transpiler_demo_output.c
+test_output.c
+*_transpiled.c
+
+# Build directories
+build/
+__pycache__/
 *.a
 *.la
 *.lo

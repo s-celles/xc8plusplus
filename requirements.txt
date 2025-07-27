@@ -1,0 +1,21 @@
+# XC8++ Python Dependencies
+# Requirements for the Clang-based C++ to C translator
+
+# Core dependency for C++ parsing
+libclang>=16.0.0
+
+# Optional: Enhanced AST manipulation
+# clang-format>=16.0.0
+
+# Development dependencies
+# pytest>=7.0.0  # For testing
+# black>=22.0.0  # Code formatting
+
+# Installation instructions:
+# pip install -r requirements.txt
+#
+# Note: On Windows, you may need to install LLVM/Clang first:
+# 1. Download LLVM from https://releases.llvm.org/
+# 2. Install to default location (C:\Program Files\LLVM)
+# 3. Add C:\Program Files\LLVM\bin to PATH
+# 4. Then install libclang: pip install libclang
