@@ -19,7 +19,11 @@ declarations and placeholders for manual implementation.
 import re
 import subprocess
 import sys
+import os
+import tempfile
+import shutil
 from pathlib import Path
+from typing import List, Dict, Optional
 
 
 class XC8Transpiler:
@@ -36,6 +40,10 @@ class XC8Transpiler:
         self.variables = []
         self.includes = []
         self.source_code = ""  # Store original source for body extraction
+        self.temp_files = []  # Track temporary files for cleanup
+        self.source_files = {}  # Track analyzed source files
+        self.xc8_stubs_enabled = True  # Enable XC8 stubs by default
+        self.all_source_codes = {}  # Store all source files content for body extraction
 
     def analyze_with_clang(self, cpp_file):
         """
@@ -67,6 +75,259 @@ class XC8Transpiler:
 
         except Exception as e:
             print(f"Error running Clang analysis: {e}")
+            return None
+
+    def _create_xc8_stubs_header(self) -> str:
+        """Create a temporary header with XC8 stub definitions for Clang analysis."""
+        xc8_stubs = '''
+// XC8 Stub Definitions for Clang Analysis
+#ifndef XC8_STUBS_H
+#define XC8_STUBS_H
+
+// Delay macros
+#define __delay_ms(x) do { volatile int _delay = (x) * 1000; while(_delay--); } while(0)
+#define __delay_us(x) do { volatile int _delay = (x); while(_delay--); } while(0)
+
+// PIC16F876A Register Stubs
+typedef struct {
+    unsigned RA0 : 1; unsigned RA1 : 1; unsigned RA2 : 1; unsigned RA3 : 1;
+    unsigned RA4 : 1; unsigned RA5 : 1; unsigned : 2;
+} PORTAbits_t;
+
+typedef struct {
+    unsigned RC0 : 1; unsigned RC1 : 1; unsigned RC2 : 1; unsigned RC3 : 1;
+    unsigned RC4 : 1; unsigned RC5 : 1; unsigned RC6 : 1; unsigned RC7 : 1;
+} PORTCbits_t;
+
+typedef struct {
+    unsigned RB0 : 1; unsigned RB1 : 1; unsigned RB2 : 1; unsigned RB3 : 1;
+    unsigned RB4 : 1; unsigned RB5 : 1; unsigned RB6 : 1; unsigned RB7 : 1;
+} PORTBbits_t;
+
+typedef struct {
+    unsigned TRISA0 : 1; unsigned TRISA1 : 1; unsigned TRISA2 : 1; unsigned TRISA3 : 1;
+    unsigned TRISA4 : 1; unsigned TRISA5 : 1; unsigned : 2;
+} TRISAbits_t;
+
+typedef struct {
+    unsigned TRISB0 : 1; unsigned TRISB1 : 1; unsigned TRISB2 : 1; unsigned TRISB3 : 1;
+    unsigned TRISB4 : 1; unsigned TRISB5 : 1; unsigned TRISB6 : 1; unsigned TRISB7 : 1;
+} TRISBbits_t;
+
+typedef struct {
+    unsigned T0CS : 1; unsigned T0SE : 1; unsigned PSA : 1; unsigned PS0 : 1;
+    unsigned PS1 : 1; unsigned PS2 : 1; unsigned INTEDG : 1; unsigned RBPU : 1;
+} OPTION_REGbits_t;
+
+typedef struct {
+    unsigned RBIF : 1; unsigned INTF : 1; unsigned T0IF : 1; unsigned RBIE : 1;
+    unsigned INTE : 1; unsigned T0IE : 1; unsigned PEIE : 1; unsigned GIE : 1;
+} INTCONbits_t;
+
+// Global register variables
+extern volatile PORTAbits_t PORTAbits;
+extern volatile PORTBbits_t PORTBbits;
+extern volatile PORTCbits_t PORTCbits;
+extern volatile TRISAbits_t TRISAbits;
+extern volatile TRISBbits_t TRISBbits;
+extern volatile OPTION_REGbits_t OPTION_REGbits;
+extern volatile INTCONbits_t INTCONbits;
+extern volatile unsigned char TMR0;
+
+#endif // XC8_STUBS_H
+'''
+        
+        # Create temporary file
+        temp_fd, temp_path = tempfile.mkstemp(suffix='.h', prefix='xc8_stubs_')
+        os.write(temp_fd, xc8_stubs.encode('utf-8'))
+        os.close(temp_fd)
+        
+        self.temp_files.append(temp_path)
+        return temp_path
+
+    def _create_comprehensive_xc8_stubs_header(self, project_dir: Path) -> str:
+        """Create a comprehensive XC8 stubs header that includes project-specific definitions."""
+        xc8_stubs = '''
+// Comprehensive XC8 Stub Definitions for Clang Analysis
+#ifndef XC8_COMPREHENSIVE_STUBS_H
+#define XC8_COMPREHENSIVE_STUBS_H
+
+// Standard includes
+#include <stdint.h>
+#include <stdbool.h>
+
+// Delay macros
+#define __delay_ms(x) do { volatile int _delay = (x) * 1000; while(_delay--); } while(0)
+#define __delay_us(x) do { volatile int _delay = (x); while(_delay--); } while(0)
+
+// PIC16F876A Register Stubs
+typedef struct {
+    unsigned RA0 : 1; unsigned RA1 : 1; unsigned RA2 : 1; unsigned RA3 : 1;
+    unsigned RA4 : 1; unsigned RA5 : 1; unsigned : 2;
+} PORTAbits_t;
+
+typedef struct {
+    unsigned RC0 : 1; unsigned RC1 : 1; unsigned RC2 : 1; unsigned RC3 : 1;
+    unsigned RC4 : 1; unsigned RC5 : 1; unsigned RC6 : 1; unsigned RC7 : 1;
+} PORTCbits_t;
+
+typedef struct {
+    unsigned RB0 : 1; unsigned RB1 : 1; unsigned RB2 : 1; unsigned RB3 : 1;
+    unsigned RB4 : 1; unsigned RB5 : 1; unsigned RB6 : 1; unsigned RB7 : 1;
+} PORTBbits_t;
+
+typedef struct {
+    unsigned TRISA0 : 1; unsigned TRISA1 : 1; unsigned TRISA2 : 1; unsigned TRISA3 : 1;
+    unsigned TRISA4 : 1; unsigned TRISA5 : 1; unsigned : 2;
+} TRISAbits_t;
+
+typedef struct {
+    unsigned TRISB0 : 1; unsigned TRISB1 : 1; unsigned TRISB2 : 1; unsigned TRISB3 : 1;
+    unsigned TRISB4 : 1; unsigned TRISB5 : 1; unsigned TRISB6 : 1; unsigned TRISB7 : 1;
+} TRISBbits_t;
+
+typedef struct {
+    unsigned T0CS : 1; unsigned T0SE : 1; unsigned PSA : 1; unsigned PS0 : 1;
+    unsigned PS1 : 1; unsigned PS2 : 1; unsigned INTEDG : 1; unsigned RBPU : 1;
+} OPTION_REGbits_t;
+
+typedef struct {
+    unsigned RBIF : 1; unsigned INTF : 1; unsigned T0IF : 1; unsigned RBIE : 1;
+    unsigned INTE : 1; unsigned T0IE : 1; unsigned PEIE : 1; unsigned GIE : 1;
+} INTCONbits_t;
+
+// Global register variables
+extern volatile PORTAbits_t PORTAbits;
+extern volatile PORTBbits_t PORTBbits;
+extern volatile PORTCbits_t PORTCbits;
+extern volatile TRISAbits_t TRISAbits;
+extern volatile TRISBbits_t TRISBbits;
+extern volatile OPTION_REGbits_t OPTION_REGbits;
+extern volatile INTCONbits_t INTCONbits;
+extern volatile unsigned char TMR0;
+'''
+
+        # Scan for project-specific enums in pin_manager.h or other headers
+        pin_manager_file = project_dir / "pin_manager.h"
+        if pin_manager_file.exists():
+            with open(pin_manager_file, 'r', encoding='utf-8') as f:
+                content = f.read()
+                
+                # Extract enum definitions and add them as stubs
+                enum_matches = re.findall(r'typedef\s+enum\s*\{([^}]+)\}\s*(\w+);', content)
+                for enum_body, enum_name in enum_matches:
+                    xc8_stubs += f"\n// {enum_name} enum stub\ntypedef enum {{{enum_body}}} {enum_name};\n"
+
+        xc8_stubs += '\n#endif // XC8_COMPREHENSIVE_STUBS_H\n'
+        
+        # Create temporary file
+        temp_fd, temp_path = tempfile.mkstemp(suffix='.h', prefix='xc8_comprehensive_stubs_')
+        os.write(temp_fd, xc8_stubs.encode('utf-8'))
+        os.close(temp_fd)
+        
+        self.temp_files.append(temp_path)
+        return temp_path
+
+    def _preprocess_cpp_file(self, cpp_file: Path, stubs_header: str) -> str:
+        """Preprocess a C++ file to add XC8 stubs header and copy local includes."""
+        with open(cpp_file, 'r', encoding='utf-8') as f:
+            original_content = f.read()
+        
+        # Create a temporary directory for the preprocessed files
+        temp_dir = Path(tempfile.mkdtemp(prefix='xc8_preprocess_'))
+        self.temp_files.append(str(temp_dir))
+        
+        # Copy all local header files to temp directory
+        source_dir = cpp_file.parent
+        for header_file in source_dir.glob('*.h'):
+            shutil.copy2(header_file, temp_dir)
+        for header_file in source_dir.glob('*.hpp'):
+            shutil.copy2(header_file, temp_dir)
+        
+        # Process the content to add stubs
+        lines = original_content.split('\n')
+        processed_lines = []
+        stubs_added = False
+        
+        # Add the stubs header at the very beginning
+        processed_lines.append(f'#include "{stubs_header}"')
+        stubs_added = True
+        
+        for line in lines:
+            # Convert relative includes to use temp directory if needed
+            if line.strip().startswith('#include "'):
+                # Keep the line as-is, files are copied to temp dir
+                processed_lines.append(line)
+            else:
+                processed_lines.append(line)
+        
+        # Create temporary processed file in the temp directory
+        temp_file = temp_dir / f'processed_{cpp_file.name}'
+        processed_content = '\n'.join(processed_lines)
+        
+        with open(temp_file, 'w', encoding='utf-8') as f:
+            f.write(processed_content)
+        
+        return str(temp_file)
+
+    def analyze_with_clang_enhanced(self, cpp_file: Path) -> Optional[str]:
+        """
+        Enhanced Clang analysis with XC8 stubs support.
+        Automatically handles XC8-specific macros by preprocessing files.
+        """
+        try:
+            analysis_file = cpp_file
+            temp_dir = None
+            
+            # If XC8 stubs are enabled and this is a .cpp file, preprocess it
+            if self.xc8_stubs_enabled and cpp_file.suffix.lower() == '.cpp':
+                stubs_header = self._create_xc8_stubs_header()
+                processed_file_path = self._preprocess_cpp_file(cpp_file, stubs_header)
+                analysis_file = Path(processed_file_path)
+                temp_dir = analysis_file.parent
+            
+            # Use enhanced Clang command with additional include paths
+            return self._analyze_with_clang_internal(analysis_file, temp_dir)
+            
+        except Exception as e:
+            print(f"Error in enhanced Clang analysis: {e}")
+            return None
+
+    def _analyze_with_clang_internal(self, cpp_file: Path, additional_include_dir: Optional[Path] = None) -> Optional[str]:
+        """
+        Internal Clang analysis with configurable include paths.
+        """
+        try:
+            # Base Clang command
+            clang_cmd = [
+                r"C:\Program Files\Microchip\xc8\v3.00\pic\bin\clang.exe",
+                "-Xclang",
+                "-ast-dump",
+                "-fsyntax-only",
+                "-std=c++17",
+                "-I",
+                r"C:\Program Files\Microchip\xc8\v3.00\pic\include",
+                "-I",
+                r"C:\Program Files\Microchip\xc8\v3.00\pic\include\c99",
+                "--target=pic",
+            ]
+            
+            # Add additional include directory if provided
+            if additional_include_dir:
+                clang_cmd.extend(["-I", str(additional_include_dir)])
+            
+            # Add the source file
+            clang_cmd.append(str(cpp_file))
+
+            result = subprocess.run(clang_cmd, capture_output=True, text=True)
+            if result.returncode != 0:
+                print(f"Clang analysis failed: {result.stderr}")
+                return None
+
+            return result.stdout
+
+        except Exception as e:
+            print(f"Error running internal Clang analysis: {e}")
             return None
 
     def parse_ast_dump(self, ast_dump):
@@ -129,36 +390,81 @@ class XC8Transpiler:
                 self._parse_function_declaration(line)
 
     def _extract_method_body_from_source(self, method_name, class_name):
-        """Extract method body from the original source code"""
-        if not self.source_code:
-            return None
-            
-        # Find the class definition
-        class_pattern = rf"class\s+{class_name}\s*\{{"
-        class_match = re.search(class_pattern, self.source_code)
-        if not class_match:
-            return None
-            
-        # Find the method within the class
-        class_start = class_match.start()
-        class_content = self.source_code[class_start:]
+        """Extract method body from the original source code, searching all source files"""
         
-        # Pattern to match method definition with body
+        # First try to find in the current source code (for inline methods)
+        inline_body = self._extract_method_body_from_single_source(method_name, class_name, self.source_code)
+        if inline_body:
+            return inline_body
+        
+        # Then search in all stored source files for implementation
+        for file_path, content in self.all_source_codes.items():
+            if file_path.endswith('.cpp'):  # Look for implementations in .cpp files
+                body = self._extract_method_body_from_single_source(method_name, class_name, content)
+                if body:
+                    return body
+        
+        return None
+
+    def _extract_method_body_from_single_source(self, method_name, class_name, source_content):
+        """Extract method body from a single source file"""
+        if not source_content:
+            return None
+        
+        # Try to find method inside class definition (inline)
+        class_pattern = rf"class\s+{class_name}\s*\{{"
+        class_match = re.search(class_pattern, source_content)
+        if class_match:
+            class_start = class_match.start()
+            # Find the end of the class
+            class_content = source_content[class_start:]
+            
+            # Find class closing brace
+            brace_count = 0
+            class_end = 0
+            for i, char in enumerate(class_content):
+                if char == '{':
+                    brace_count += 1
+                elif char == '}':
+                    brace_count -= 1
+                    if brace_count == 0:
+                        class_end = i
+                        break
+            
+            if class_end > 0:
+                class_body = class_content[:class_end]
+                inline_body = self._extract_method_from_content(method_name, class_body)
+                if inline_body:
+                    return inline_body
+        
+        # Try to find method implementation outside class (in .cpp files)
+        # Pattern: ClassName::methodName(...) { ... }
+        external_pattern = rf"{class_name}::{method_name}\s*\([^)]*\)\s*(?:const\s*)?\s*\{{"
+        external_match = re.search(external_pattern, source_content)
+        if external_match:
+            return self._extract_method_from_content_at_position(source_content, external_match.end() - 1)
+        
+        return None
+
+    def _extract_method_from_content(self, method_name, content):
+        """Extract method body from content"""
         method_pattern = rf"\b{method_name}\s*\([^)]*\)\s*(?:const\s*)?\s*\{{"
-        method_match = re.search(method_pattern, class_content)
+        method_match = re.search(method_pattern, content)
         if not method_match:
             return None
-            
-        # Extract the method body by counting braces
-        method_start = method_match.end() - 1  # Start at the opening brace
-        brace_count = 0
-        body_start = method_start + 1
-        i = method_start
         
-        while i < len(class_content):
-            if class_content[i] == '{':
+        return self._extract_method_from_content_at_position(content, method_match.end() - 1)
+    
+    def _extract_method_from_content_at_position(self, content, start_pos):
+        """Extract method body starting from a specific position (opening brace)"""
+        brace_count = 0
+        body_start = start_pos + 1
+        i = start_pos
+        
+        while i < len(content):
+            if content[i] == '{':
                 brace_count += 1
-            elif class_content[i] == '}':
+            elif content[i] == '}':
                 brace_count -= 1
                 if brace_count == 0:
                     body_end = i
@@ -168,25 +474,92 @@ class XC8Transpiler:
             return None
             
         # Extract and clean the body
-        body = class_content[body_start:body_end].strip()
-        return body
+        body = content[body_start:body_end].strip()
+        return body if body else None
+
+    def _transpile_method_body(self, cpp_body, class_name):
+        """Transpile C++ method body to C code"""
+        if not cpp_body:
+            return "    // Empty method body\n"
+        
+        # Split body into lines for processing
+        lines = cpp_body.split('\n')
+        transpiled_lines = []
+        
+        for line in lines:
+            # Strip leading/trailing whitespace but preserve indentation
+            stripped_line = line.rstrip()
+            if not stripped_line:
+                transpiled_lines.append('')
+                continue
+                
+            # Add proper indentation for C function
+            indented_line = '    ' + stripped_line
+            
+            # Apply C++ to C transformations
+            transformed_line = self._transform_cpp_line_to_c(indented_line, class_name)
+            transpiled_lines.append(transformed_line)
+        
+        # Join lines and ensure proper formatting
+        result = '\n'.join(transpiled_lines)
+        if result and not result.endswith('\n'):
+            result += '\n'
+            
+        return result
+
+    def _transform_cpp_line_to_c(self, line, class_name):
+        """Transform a single C++ line to C equivalent"""
+        
+        # Clean up any Unicode characters that might cause encoding issues
+        line = line.encode('ascii', 'ignore').decode('ascii')
+        
+        # Handle member variable access: this->member or direct member access
+        # Transform member access to explicit this pointer usage
+        line = re.sub(r'\b(\w+)\s*=', r'self->\1 =', line)
+        
+        # Handle method calls on this object: methodName() -> ClassName_methodName(self)
+        for other_class, class_info in self.classes.items():
+            for method in class_info['methods']:
+                method_name = method['name']
+                # Pattern: methodName(...) -> ClassName_methodName(self, ...)
+                pattern = rf'\b{method_name}\s*\(\s*\)'
+                replacement = f'{other_class}_{method_name}(self)'
+                line = re.sub(pattern, replacement, line)
+                
+                # Pattern with parameters: methodName(params) -> ClassName_methodName(self, params)
+                pattern = rf'\b{method_name}\s*\(([^)]+)\)'
+                replacement = rf'{other_class}_{method_name}(self, \1)'
+                line = re.sub(pattern, replacement, line)
+        
+        # Handle object method calls: object.method() -> Class_method(&object)
+        # This is more complex and would need object tracking
+        
+        # Handle C++ specific constructs
+        line = line.replace('true', '1')
+        line = line.replace('false', '0')
+        
+        # Handle enum access if we know the enums
+        # This would need enum tracking from the AST analysis
+        
+        return line
 
     def _extract_function_body_from_source(self, func_name):
-        """Extract function body from the original source code"""
-        if not self.source_code:
-            return None
+        """Extract function body from the original source code, searching all files"""
         
-        # Find all function definitions with this name
-        func_pattern = rf"\b{func_name}\s*\([^)]*\)\s*\{{"
-        func_matches = list(re.finditer(func_pattern, self.source_code))
+        # Search in all stored source files
+        for file_path, content in self.all_source_codes.items():
+            # Look for function definitions
+            func_pattern = rf"\b{func_name}\s*\([^)]*\)\s*\{{"
+            func_matches = list(re.finditer(func_pattern, content))
+            
+            if func_matches:
+                # Get the last match (in case of multiple definitions)
+                func_match = func_matches[-1]
+                body = self._extract_method_from_content_at_position(content, func_match.end() - 1)
+                if body:
+                    return body
         
-        if not func_matches:
-            return None
-        
-        # For overloaded functions, we need to extract all bodies
-        # This is a simplified approach - we'll return the body of the last match for now
-        # A more sophisticated approach would match parameter types
-        func_match = func_matches[-1]  # Get the last match
+        return None
         
         # Extract the function body by counting braces
         func_start = func_match.end() - 1  # Start at the opening brace
@@ -345,7 +718,7 @@ class XC8Transpiler:
         Generate proper C code using semantic analysis.
         Uses semantic transformation with Clang AST analysis.
         """
-        with open(output_file, "w") as f:
+        with open(output_file, "w", encoding='utf-8') as f:
             f.write("/*\n")
             f.write(" * XC8 C++ to C Transpilation\n")
             f.write(" * Generated using semantic AST analysis\n")
@@ -702,37 +1075,372 @@ class XC8Transpiler:
 
         return True
 
+    def add_source_file(self, cpp_file: Path) -> bool:
+        """
+        Add a C++ source file to be transpiled. Uses enhanced analysis with XC8 stubs.
+        
+        Args:
+            cpp_file: Path to the C++ source file
+            
+        Returns:
+            True if file was successfully analyzed, False otherwise
+        """
+        if not cpp_file.exists():
+            print(f"Error: File not found: {cpp_file}")
+            return False
+            
+        print(f"Analyzing: {cpp_file.name}")
+        
+        try:
+            # Read the original source code for body extraction
+            with open(cpp_file, 'r', encoding='utf-8') as f:
+                self.source_code = f.read()
+            
+            # Try enhanced analysis first (with XC8 stubs for .cpp files)
+            ast_dump = self.analyze_with_clang_enhanced(cpp_file)
+            
+            # If enhanced analysis fails, try basic analysis
+            if ast_dump is None and cpp_file.suffix.lower() == '.cpp':
+                print(f"  Enhanced analysis failed, trying basic analysis...")
+                ast_dump = self.analyze_with_clang(cpp_file)
+            
+            if ast_dump is None:
+                print(f"  Failed to analyze {cpp_file.name} with Clang")
+                return False
+            
+            # Parse the AST dump
+            self.parse_ast_dump(ast_dump)
+            
+            # Store the source file info
+            self.source_files[str(cpp_file)] = {
+                'name': cpp_file.name,
+                'path': cpp_file,
+                'analyzed': True
+            }
+            
+            print(f"  Successfully analyzed {cpp_file.name}")
+            return True
+            
+        except Exception as e:
+            print(f"  Error analyzing {cpp_file.name}: {e}")
+            return False
+
+    def transpile_multiple_files(self, cpp_files: List[Path], output_dir: Path, base_name: str = "transpiled") -> bool:
+        """
+        Transpile multiple C++ files to a single C output file.
+        
+        Args:
+            cpp_files: List of C++ source files
+            output_dir: Output directory for generated files
+            base_name: Base name for the output file
+            
+        Returns:
+            True if transpilation was successful, False otherwise
+        """
+        if not cpp_files:
+            print("No source files to transpile")
+            return False
+        
+        output_dir.mkdir(exist_ok=True)
+        output_file = output_dir / f"{base_name}.c"
+        
+        print(f"\nTranspiling {len(cpp_files)} files to: {output_file}")
+        
+        # Reset state for multiple file analysis
+        self.classes = {}
+        self.functions = []
+        self.overloaded_functions = {}
+        self.main_function = None
+        self.variables = []
+        self.includes = []
+        self.source_files = {}
+        self.all_source_codes = {}  # Reset source codes storage
+        
+        # Determine project directory for comprehensive stubs
+        project_dir = cpp_files[0].parent if cpp_files else Path.cwd()
+        
+        # Add and analyze all source files
+        analyzed_count = 0
+        failed_files = []
+        
+        for cpp_file in cpp_files:
+            print(f"Analyzing: {cpp_file.name}")
+            
+            try:
+                # Read the original source code for body extraction
+                with open(cpp_file, 'r', encoding='utf-8') as f:
+                    source_content = f.read()
+                    self.source_code = source_content
+                    # Store all source codes for comprehensive body extraction
+                    self.all_source_codes[str(cpp_file)] = source_content
+                
+                # Try enhanced analysis with comprehensive stubs for .cpp files
+                if cpp_file.suffix.lower() == '.cpp' and self.xc8_stubs_enabled:
+                    # Create comprehensive stubs that include project-specific definitions
+                    comprehensive_stubs = self._create_comprehensive_xc8_stubs_header(project_dir)
+                    processed_file_path = self._preprocess_cpp_file(cpp_file, comprehensive_stubs)
+                    analysis_file = Path(processed_file_path)
+                    temp_dir = analysis_file.parent
+                    ast_dump = self._analyze_with_clang_internal(analysis_file, temp_dir)
+                else:
+                    # For .hpp files or when stubs are disabled, use standard analysis
+                    ast_dump = self.analyze_with_clang(cpp_file)
+                
+                # If enhanced analysis fails, try basic analysis
+                if ast_dump is None and cpp_file.suffix.lower() == '.cpp':
+                    print(f"  Enhanced analysis failed, trying basic analysis...")
+                    ast_dump = self.analyze_with_clang(cpp_file)
+                
+                if ast_dump is None:
+                    print(f"  Failed to analyze {cpp_file.name} with Clang")
+                    failed_files.append(cpp_file.name)
+                    continue
+                
+                # Parse the AST dump
+                self.parse_ast_dump(ast_dump)
+                
+                # Store the source file info
+                self.source_files[str(cpp_file)] = {
+                    'name': cpp_file.name,
+                    'path': cpp_file,
+                    'analyzed': True
+                }
+                
+                print(f"  Successfully analyzed {cpp_file.name}")
+                analyzed_count += 1
+                
+            except Exception as e:
+                print(f"  Error analyzing {cpp_file.name}: {e}")
+                failed_files.append(cpp_file.name)
+        
+        if analyzed_count == 0:
+            print("No files could be analyzed successfully")
+            if failed_files:
+                print("Failed files:", ", ".join(failed_files))
+            return False
+        
+        print(f"\nSuccessfully analyzed: {analyzed_count}/{len(cpp_files)} files")
+        if failed_files:
+            print(f"Failed files: {', '.join(failed_files)}")
+        
+        try:
+            # Generate the C code
+            self.generate_c_code(str(output_file))
+            
+            # Generate detailed report
+            self._generate_transpilation_report(output_dir, base_name)
+            
+            return True
+            
+        except Exception as e:
+            print(f"Error during transpilation: {e}")
+            return False
+
+    def _generate_transpilation_report(self, output_dir: Path, base_name: str) -> None:
+        """Generate a detailed report of the transpilation process."""
+        report_file = output_dir / f"{base_name}_report.txt"
+        
+        with open(report_file, 'w') as f:
+            f.write("XC8++ Enhanced Transpilation Report\n")
+            f.write("=" * 50 + "\n\n")
+            
+            f.write(f"Source Files Analyzed: {len(self.source_files)}\n")
+            for file_path, file_info in self.source_files.items():
+                status = "OK" if file_info['analyzed'] else "FAILED"
+                f.write(f"  - {file_info['name']}: {status}\n")
+            f.write("\n")
+            
+            f.write(f"Classes Found: {len(self.classes)}\n")
+            for class_name, class_info in self.classes.items():
+                method_count = len(class_info['methods'])
+                field_count = len(class_info['fields'])
+                f.write(f"  - {class_name}: {method_count} methods, {field_count} fields\n")
+                
+                # List methods
+                for method in class_info['methods']:
+                    f.write(f"    * {method['name']}(): {method['type']}\n")
+                
+                # List fields
+                for field in class_info['fields']:
+                    f.write(f"    . {field['name']}: {field['type']}\n")
+                f.write("\n")
+            
+            f.write(f"Overloaded Functions: {len(self.overloaded_functions)}\n")
+            for func_name, overloads in self.overloaded_functions.items():
+                f.write(f"  - {func_name}: {len(overloads)} overloads\n")
+                for overload in overloads:
+                    f.write(f"    * {overload['mangled_name']}: {overload['type']}\n")
+            f.write("\n")
+            
+            if self.main_function:
+                f.write("Main Function: Found\n")
+                f.write(f"  Type: {self.main_function['type']}\n")
+            else:
+                f.write("Main Function: Not found\n")
+            f.write("\n")
+            
+            f.write("XC8 Stubs: " + ("Enabled" if self.xc8_stubs_enabled else "Disabled") + "\n")
+            f.write(f"Temporary Files Created: {len(self.temp_files)}\n")
+        
+        print(f"Generated report: {report_file.name}")
+
+    def copy_supporting_files(self, source_dir: Path, output_dir: Path) -> List[str]:
+        """Copy supporting C/H files that don't need transpilation."""
+        c_extensions = ['.c', '.h']
+        copied_files = []
+        
+        for file_path in source_dir.iterdir():
+            if file_path.is_file() and file_path.suffix.lower() in c_extensions:
+                dest_file = output_dir / file_path.name
+                shutil.copy2(file_path, dest_file)
+                copied_files.append(file_path.name)
+        
+        if copied_files:
+            print(f"\nCopied supporting files:")
+            for filename in copied_files:
+                print(f"  - {filename}")
+        
+        return copied_files
+
+    def get_analysis_summary(self) -> Dict:
+        """Get a summary of the analysis results."""
+        return {
+            'source_files': len(self.source_files),
+            'classes': len(self.classes),
+            'overloaded_functions': len(self.overloaded_functions),
+            'has_main': self.main_function is not None,
+            'xc8_stubs_enabled': self.xc8_stubs_enabled,
+            'temp_files': len(self.temp_files)
+        }
+
+    def cleanup_temp_files(self):
+        """Clean up temporary files and directories created during analysis."""
+        for temp_item in self.temp_files:
+            try:
+                temp_path = Path(temp_item)
+                if temp_path.is_file():
+                    os.unlink(temp_item)
+                elif temp_path.is_dir():
+                    shutil.rmtree(temp_item)
+            except OSError:
+                pass
+        self.temp_files.clear()
+
+    def __del__(self):
+        """Destructor to clean up temporary files."""
+        self.cleanup_temp_files()
+
+
+def transpile_directory(source_dir: Path, output_dir: Path, base_name: str = "transpiled") -> bool:
+    """
+    Convenience function to transpile all C++ files in a directory.
+    
+    Args:
+        source_dir: Directory containing C++ source files
+        output_dir: Output directory for generated files
+        base_name: Base name for the output file
+        
+    Returns:
+        True if transpilation was successful, False otherwise
+    """
+    if not source_dir.exists():
+        print(f"Error: Source directory not found: {source_dir}")
+        return False
+    
+    # Find all C++ files
+    cpp_files = list(source_dir.glob("*.cpp")) + list(source_dir.glob("*.hpp"))
+    
+    if not cpp_files:
+        print(f"No C++ files found in {source_dir}")
+        return False
+    
+    print(f"XC8++ Enhanced Transpiler")
+    print(f"=" * 50)
+    print(f"Found {len(cpp_files)} C++ files:")
+    for cpp_file in cpp_files:
+        print(f"  - {cpp_file.name}")
+    
+    # Create transpiler instance
+    transpiler = XC8Transpiler()
+    
+    try:
+        # Transpile all files
+        success = transpiler.transpile_multiple_files(cpp_files, output_dir, base_name)
+        
+        if success:
+            # Copy supporting files
+            copied_files = transpiler.copy_supporting_files(source_dir, output_dir)
+            
+            # Final summary
+            summary = transpiler.get_analysis_summary()
+            print(f"\n" + "=" * 50)
+            print("Enhanced Transpilation Summary:")
+            print(f"  Input files: {summary['source_files']}")
+            print(f"  Classes transpiled: {summary['classes']}")
+            print(f"  Functions transpiled: {summary['overloaded_functions']}")
+            print(f"  Supporting files copied: {len(copied_files)}")
+            print(f"  XC8 stubs: {'Enabled' if summary['xc8_stubs_enabled'] else 'Disabled'}")
+            print(f"  Output directory: {output_dir}")
+            
+            print(f"\nSuccess! Enhanced transpilation completed.")
+            print(f"Check the generated files in: {output_dir}")
+            print(f"\nNext steps:")
+            print(f"  1. Review the generated C code")
+            print(f"  2. Implement any missing function bodies")
+            print(f"  3. Test compilation with XC8")
+        
+        return success
+        
+    finally:
+        # Cleanup temporary files
+        transpiler.cleanup_temp_files()
+
 
 def main():
-    if len(sys.argv) != 3:
-        print("Usage: python xc8_transpiler.py <input.cpp> <output.c>")
-        print("\nThis demonstrates the proper approach:")
+    if len(sys.argv) < 2:
+        print("XC8++ Enhanced Transpiler")
+        print("=" * 30)
+        print("Usage:")
+        print("  Single file: python transpiler.py <input.cpp> <output.c>")
+        print("  Directory:   python transpiler.py <source_dir> [output_dir] [base_name]")
+        print("\nFeatures:")
         print("✅ Uses Clang AST analysis")
-        print("✅ Semantic transformation")
+        print("✅ XC8 macro stub support")
+        print("✅ Multiple file transpilation")
+        print("✅ Detailed reporting")
         print("✅ No string manipulation")
-        print("✅ Proper architecture for LibTooling")
         return 1
 
-    input_file = Path(sys.argv[1])
-    output_file = Path(sys.argv[2])
+    # Parse arguments
+    if len(sys.argv) == 3 and Path(sys.argv[1]).is_file():
+        # Single file mode
+        input_file = Path(sys.argv[1])
+        output_file = Path(sys.argv[2])
 
-    if not input_file.exists():
-        print(f"Error: Input file {input_file} not found")
-        return 1
+        if not input_file.exists():
+            print(f"Error: Input file {input_file} not found")
+            return 1
 
-    transpiler = XC8Transpiler()
-    success = transpiler.transpile(input_file, output_file)
+        transpiler = XC8Transpiler()
+        success = transpiler.transpile(input_file, output_file)
 
-    if success:
-        print("\nSUCCESS: Transpilation complete!")
-        print(f"Output written to: {output_file}")
-        print(
-            "\nThis demonstrates the architecture for our C++ LibTooling implementation"
-        )
-        return 0
+        if success:
+            print("\nSUCCESS: Single file transpilation complete!")
+            print(f"Output written to: {output_file}")
+            return 0
+        else:
+            print("ERROR: Transpilation failed")
+            return 1
+    
     else:
-        print("ERROR: Transpilation failed")
-        return 1
+        # Directory mode
+        source_dir = Path(sys.argv[1])
+        output_dir = Path(sys.argv[2]) if len(sys.argv) > 2 else source_dir / "generated_c"
+        base_name = sys.argv[3] if len(sys.argv) > 3 else "transpiled_project"
+        
+        success = transpile_directory(source_dir, output_dir, base_name)
+        
+        return 0 if success else 1
 
 
 if __name__ == "__main__":
