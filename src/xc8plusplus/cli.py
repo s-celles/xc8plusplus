@@ -83,6 +83,18 @@ def transpile(
                     console.print(
                         f"    • {class_name}: {len(info['methods'])} methods, {len(info['fields'])} fields"
                     )
+                
+                if transpiler.overloaded_functions:
+                    console.print(f"  Overloaded functions found: {len(transpiler.overloaded_functions)}")
+                    for func_name, overloads in transpiler.overloaded_functions.items():
+                        console.print(f"    • {func_name}: {len(overloads)} overloads")
+                        for overload in overloads:
+                            console.print(f"      - {overload['mangled_name']}")
+                
+                if transpiler.main_function:
+                    console.print("  Main function: Found and transpiled")
+                else:
+                    console.print("  Main function: Not found")
         else:
             console.print("[bold red]❌ Error:[/bold red] Transpilation failed")
             raise typer.Exit(1)
