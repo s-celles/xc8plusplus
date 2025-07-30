@@ -135,3 +135,10 @@ void loop(void) {
     // Small delay to prevent excessive polling
     __delay_ms(10);
 }
+
+int main(void) {
+    setup();
+    while(1) {
+        loop();
+    }
+}

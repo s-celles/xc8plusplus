@@ -9,6 +9,8 @@ __version__ = "0.1.0"
 __author__ = "Sébastien Celles"
 __email__ = "s.celles@gmail.com"
 
-from .transpiler import XC8Transpiler
+# Import from the new transpilers module structure
+from .transpilers.unified_transpiler import XC8Transpiler
+from .transpilers.python_backend import TranspilerResult
 
-__all__ = ["XC8Transpiler"]
+__all__ = ["XC8Transpiler", "TranspilerResult"]
